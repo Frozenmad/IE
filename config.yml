@@ -19,7 +19,7 @@ model_params:
       dropout_rate: 0.3
       path: ./Res/embed/char_embed.pkl
       path_pre_train: ./data/word2vec_org.txt
-      shape: [3578, 64]
+      shape: [3578, 50]
     f2:
       dropout_rate: 0.3
       path: null

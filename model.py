@@ -125,7 +125,7 @@ class SequenceLabelingModel(object):
                 name='embedding_feature_dropout_%s' % feature_name)
             self.embedding_features.append(embedding_feature)
 
-        # concat all features
+        # concat all features, 将所有特征都连接起来
         input_features = self.embedding_features[0] if len(self.embedding_features) == 1 \
             else tf.concat(values=self.embedding_features, axis=2, name='input_features')
 
@@ -151,8 +151,9 @@ class SequenceLabelingModel(object):
             tf.concat(rnn_outputs, axis=2, name='lstm_output'),
             keep_prob=1.-self.dropout_rate_ph, name='lstm_output_dropout')
 
-        # softmax
+        # softmax 全连接层，将上一步得到的输出变成 n * 句子长度(补全后) * 类别 的向量
         self.outputs = tf.reshape(lstm_output, [-1, self.nb_hidden*2], name='outputs')
+        # tf.get_variable和variable的效果一样，只是如果名字冲突的话会报错
         self.softmax_w = tf.get_variable('softmax_w', [self.nb_hidden*2, self.nb_classes])
         self.softmax_b = tf.get_variable('softmax_b', [self.nb_classes])
         self.logits = tf.reshape(
@@ -160,6 +161,7 @@ class SequenceLabelingModel(object):
             shape=[-1, self.sequence_length, self.nb_classes], name='logits')
 
         # 计算loss
+        # total_loss = true_loss + regulation_loss
         self.loss = self.compute_loss()
         self.l2_loss = self.l2_rate * (tf.nn.l2_loss(self.softmax_w) + tf.nn.l2_loss(self.softmax_b))
 
@@ -169,6 +171,8 @@ class SequenceLabelingModel(object):
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         grads_and_vars = optimizer.compute_gradients(self.total_loss)
         nil_grads_and_vars = []
+        #这里，g是梯度，v是变量
+        #这里看不懂为什么要把g的第一行替换为0
         for g, v in grads_and_vars:
             if v.name in self.nil_vars:
                 nil_grads_and_vars.append((zero_nil_slot(g), v))
@@ -374,6 +378,7 @@ class SequenceLabelingModel(object):
             loss: scalar
         """
         if not self.use_crf:
+            # one hot encoding 会根据classes的数目将input转换为#class*one_hot_encoding array
             labels = tf.reshape(
                 tf.contrib.layers.one_hot_encoding(
                     tf.reshape(self.input_label_ph, [-1]), num_classes=self.nb_classes),

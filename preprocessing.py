@@ -106,7 +106,11 @@ def main():
         embedding_dict, vec_dim = load_embed_from_txt(path_pre_train)
         feature_dim_dict[feature_name] = vec_dim
         embedding_matrix = np.zeros((len(voc.keys())+1, vec_dim), dtype='float32')
+        # 这里voc是字典，所以item是它的键值，voc[item]里面存着item对应的元素个数
+        # 没有理解的一点是，voc[item]对于不同元素应该会是不同的值，为什么能够直接填在embedding_matrix里面
+        # 理解了，详情请了解utils中的build_vocabulary
         for item in voc:
+            print(voc[item])
             if item in embedding_dict:
                 embedding_matrix[voc[item], :] = embedding_dict[item]
             else:

@@ -34,6 +34,9 @@ def get_sequence_actual_length(tensor):
 
 def zero_nil_slot(t, name=None):
     """
+    重写t的第一列为0
+    tf.slice(data,坐标1，坐标2)
+    将data从坐标1到坐标2的部分截取出来
     Overwrite the nil_slot (first 1 rows) of the input Tensor with zeros.
     Args:
         t: 2D tensor
@@ -51,7 +54,7 @@ def zero_nil_slot(t, name=None):
 
 def shuffle_matrix(*args, **kw):
     """
-    shuffle 句矩阵
+    shuffle 矩阵
     """
     seed = kw['seed'] if 'seed' in kw else 1337
     for arg in args:
@@ -79,6 +82,9 @@ def create_dictionary(token_dict, dic_path, start=0, sort=False,
     voc = dict()
     if sort:
         # sort
+        # 这里token_dict.items()返回的是一个列表
+        # 每一个元素都有两个部分组成，第一个部分是名字，第二个部分是频率
+        # reverse 表示 倒序排列
         token_list = sorted(token_dict.items(), key=lambda d: d[1], reverse=True)
         for i, item in enumerate(token_list):
             if min_count and item[1] < min_count:
